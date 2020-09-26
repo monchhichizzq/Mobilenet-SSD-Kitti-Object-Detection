@@ -8,3 +8,6 @@ demo/test_files/
 trainer/logs/
 test/input/
 test/results/
+demo/
+Eval/input/
+

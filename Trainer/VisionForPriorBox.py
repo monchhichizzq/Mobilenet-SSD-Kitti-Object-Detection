@@ -140,7 +140,7 @@ class PriorBox():
 
         fig = plt.figure(figsize=(img_width/100, img_height/100))
         ax = fig.add_subplot(111)
-        plt.ylim(0,img_height*2)
+        plt.ylim(0,img_height)
         plt.xlim(0,img_width)
         plt.scatter(centers_x,centers_y)
 

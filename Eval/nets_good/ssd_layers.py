@@ -57,7 +57,7 @@ class PriorBox(Layer):
             input_shape = x._keras_shape
         elif hasattr(K, 'int_shape'):
             input_shape = K.int_shape(x)
-        print(input_shape)
+
         # ------------------ #
         #   获取宽和高
         # ------------------ #

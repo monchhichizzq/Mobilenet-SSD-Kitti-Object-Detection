@@ -16,10 +16,10 @@ class SSD(object):
         # "model_path": '../models/original/ssd_weights.h5',
         "backbone":'mobilenet',
         # "backbone": 'vgg16',
-        "model_path": '../Trainer/logs/mn/ep071-loss2.067-val_loss2.070.h5',
+        "model_path": '../Trainer/logs/ep242-loss2.113-val_loss2.084.h5',
         # "model_path": '../Trainer/logs/ep084-loss1.511-val_loss1.537.h5',
         "classes_path": '../preparation/data_txt/kitti_classes.txt',
-        "model_image_size" : (300, 300, 3),
+        "model_image_size" : (160, 480, 3),
         "confidence": 0.5,
         "nms_thresh": 0.3,
     }

@@ -9,13 +9,12 @@ import math
 
 import numpy as np
 #----------------------------------------------------#
-#   用于计算mAP
-#   代码克隆自https://github.com/Cartucho/mAP
+# Calculate the mAP
 #----------------------------------------------------#
-MINOVERLAP = 0.5 # default value (defined in    the PASCAL VOC2012 challenge)
+MINOVERLAP = 0.5 # default value (defined in the PASCAL VOC2012 challenge)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-na', '--no-animation', default=False, help="no animation is shown.", action="store_true")
+parser.add_argument('-na', '--no-animation', default=True, help="no animation is shown.", action="store_true")
 parser.add_argument('-np', '--no-plot', default=True, help="no plot is shown.", action="store_true")
 parser.add_argument('-q', '--quiet', help="minimalistic console output.", action="store_true")
 # argparse receiving list of classes to be ignored

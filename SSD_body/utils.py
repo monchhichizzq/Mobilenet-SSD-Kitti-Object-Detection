@@ -5,15 +5,17 @@ import warnings
 
 def letterbox_image(image, size):
     iw, ih = image.size
-    w, h = size
+    w, h = size # (160, 480)
     scale = min(w/iw, h/ih)
     nw = int(iw*scale)
     nh = int(ih*scale)
+    # print('Original frame: {0}, input: {1}, scalewh:{2}, {3}, scale:{4}'.format(image.size, (h, w, 3), nh, nw, scale))
 
     image = image.resize((nw,nh), Image.BICUBIC)
     new_image = Image.new('RGB', size, (128,128,128))
     new_image.paste(image, ((w-nw)//2, (h-nh)//2))
-    x_offset,y_offset = (w-nw)//2/300, (h-nh)//2/300
+    # x_offset,y_offset = (w-nw)//2/300, (h-nh)//2/300
+    x_offset, y_offset = (w - nw) // 2 / iw, (h - nh) // 2 / ih
     return new_image,x_offset,y_offset
 
 def ssd_correct_boxes(top, left, bottom, right, input_shape, image_shape):
@@ -169,7 +171,7 @@ class BBoxUtility(object):
 
     def detection_out(self, predictions, background_label_id=0, keep_top_k=200,
                       confidence_threshold=0.5):
-        # 网络预测的结果
+        # 网络预测的结果 loc+conf+priorbox+variances
         mbox_loc = predictions[:, :, :4]
         # 0.1，0.1，0.2，0.2
         variances = predictions[:, :, -4:]

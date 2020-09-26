@@ -1,42 +1,31 @@
 #-------------------------------------#
 #       调用摄像头检测
 #-------------------------------------#
-from ssd import SSD
-from PIL import Image
+from Eval.get_Kittidetection_txt import SSD_predictions
 import tensorflow as tf
-import numpy as np
+from PIL import Image
+import os
 import cv2
-import time
+import numpy as np
+
+FPS = 20
+height = 480
+width = 1280
 
 gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-    
-ssd = SSD()
-# 调用摄像头
-capture=cv2.VideoCapture(0) # capture=cv2.VideoCapture("1.mp4")
-fps = 0.0
-while(True):
-    t1 = time.time()
-    # 读取某一帧
-    ref,frame=capture.read()
-    # 格式转变，BGRtoRGB
-    frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-    # 转变成Image
-    frame = Image.fromarray(np.uint8(frame))
+out = cv2.VideoWriter('0047_drive.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), FPS, (width, height))
 
-    # 进行检测
-    frame = np.array(ssd.detect_image(frame))
-
-    # RGBtoBGR满足opencv显示格式
-    frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
-
-    fps  = ( fps + (1./(time.time()-t1)) ) / 2
-    print("fps= %.2f"%(fps))
-    frame = cv2.putText(frame, "fps= %.2f"%(fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-    cv2.imshow("video",frame)
-    c= cv2.waitKey(1) & 0xff 
-    if c==27:
-        capture.release()
-        break
+path = '2011_09_26_drive_0005_extract/2011_09_26/2011_09_26_drive_0005_extract/image_02/data'
+path = '2011_10_03_drive_0047_extract/2011_10_03/2011_10_03_drive_0047_extract/image_03/data'
+ssd = SSD_predictions(gap=2)
+for image_name in os.listdir(path):
+    image_path = os.path.join(path, image_name)
+    bgr_img=cv2.imread(image_path)
+    print(np.shape(bgr_img))
+    image = Image.open(image_path)
+    img = ssd.detect_image(image_name, image, bgr_img)
+    img = cv2.resize(img, (width, height))
+    print(np.shape(img))
+    out.write(img)
+out.release()
+cv2.destroyAllWindows()
