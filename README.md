@@ -74,8 +74,6 @@ SSD Evaluation Results
 <p align="center">
     <img src="demo/mAP.png", width="480", height='320'>
 
-![image](demo/0047-drive.gif)
-
 
 Video test
 ===================================================
