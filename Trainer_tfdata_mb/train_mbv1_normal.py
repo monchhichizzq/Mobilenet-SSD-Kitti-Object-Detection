@@ -93,18 +93,6 @@ config = {'Training mode': False,
           'command_line':"python3 ../Callbacks/get_map.py --ex_index {} --GT_PATH ../Trainer_tfdata_mb/input_{}/ground-truth_{} --DR_PATH ../Trainer_tfdata_mb/input_{}/detection-results_{}".format(ex_index, ex_index, ex_index, ex_index, ex_index),
           }
 
-def set_l1(model):
-    ignore_layers = ['block_convbn0_conv_spike']
-    for i, layer in enumerate(model.layers):
-        if hasattr(layer, '_alpha'):
-            a, nb_spikes, nb_total_spikes, = layer.get_weights()
-            a = config['l1']
-            layer.set_weights(np.array([a, nb_spikes, nb_total_spikes]))
-            if layer.name in ignore_layers:
-                # a = nb_spikes / nb_total_spikes*1e-6
-                layer.set_weights(np.array([0, nb_spikes, nb_total_spikes]))
-            print('{} set L1 alpha: {}'.format(layer.name, a))
-
 
 if __name__ == "__main__":
     # Logs directory
@@ -156,7 +144,7 @@ if __name__ == "__main__":
     else:
         Conv_SSD = model(input_tensor, input_shape=input_shape, pretrained=False)
         ConvBN_SSD = BN_model(input_tensor, input_shape=input_shape, pretrained=False)
-        ConvBN_SSD.load_weights(config['pretrained_model'], by_name=True, skip_mismatch=True)
+        # ConvBN_SSD.load_weights(config['pretrained_model'], by_name=True, skip_mismatch=True)
         logger.info('Build SSD model - BN {} - bias {}'.format(True, False))
         SSDBN_model = ConvBN_SSD
     
@@ -175,18 +163,6 @@ if __name__ == "__main__":
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=40, verbose=1)
 
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=20, verbose=1)
-
-    weight_sparsity_callback = Weight_Sparsity_Callback(verbose=False)
-
-    fix_w_callback = Fix_Weight_Sparsity_Callback(verbose=False)
-
-    update_l1_callback = Adaptive_L1_Coefficient_Callback(initial_alpha=config['l1'], 
-                                                          metric='mAP', 
-                                                          mode='max',
-                                                          aug_rate=config['aug_rate'],
-                                                          expectation=config['expectation'], 
-                                                          ignore_layers=['block_convbn0_conv_spike'], 
-                                                          verbose=True)
 
     map_callbacks = VOC2012mAP_Callback(ex_index=ex_index,
                                         visual=config['plot_prediction'],
@@ -207,16 +183,11 @@ if __name__ == "__main__":
                                 use_focal_loss=False,
                                 anchor_file=False)
 
-    # SSD_model.compile(optimizer=Adam(lr=config['lr']), loss=MultiboxLoss(num_classes, neg_pos_ratio=3.0).compute_loss)
-
     SSDBN_model.compile(optimizer=Adam(lr=config['lr']), 
                         loss=multibox_loss.total_loss,
                         metrics=[multibox_loss.total_loss,
-                                multibox_loss.l1_loss,
                                 multibox_loss.location_loss_positive,
-                                multibox_loss._softmax_loss,
-                                multibox_loss.nb_spikes,
-                                multibox_loss.nb_total_spikes])
+                                multibox_loss._softmax_loss])
 
     if config['Training mode']:
         # SSDBN_model.evaluate(val_dataset, verbose=1)
@@ -231,30 +202,5 @@ if __name__ == "__main__":
     else:
 
         SSDBN_model.evaluate(val_dataset, verbose=1)
-        SSDBN_model.predict(val_dataset, verbose=1, callbacks=[weight_sparsity_callback, map_callbacks])
+        SSDBN_model.predict(val_dataset, verbose=1, callbacks=[map_callbacks])
 
-
-# 0 - 1327 alpha = 1e-7
-# 1327 -   alpha = 1e-6
-
-# tf.data 78s num_parallel 4
-# tf.data 64s num_parallel 8
-# tf.data 73s num_parallel 16
-# tf.data 100s num_parallel 32
-# tf.data + fix_weight 140s 
-
-
-
-# RTX 2080ti
-# tf.data 48s num_parallel 8
-# tf.data 48s num_parallel-8 2GPUs 64-batch
-# tf.data 50s num_parallel-8 2GPUs 64-batch
-# generator + fix_weight 180s
-
-    
-# stage v1 1e-7
-# stage v2 1e-6
-
-
-# Model with BN is easy to finetune with big learning rate
-# Model without BN is sensitive to the value of learning rate

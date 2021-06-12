@@ -30,6 +30,7 @@ from tensorflow.keras.layers import Softmax
 from tensorflow.keras.layers import concatenate
 from tensorflow.keras.models import Model
 from Models.anchor_layer import PriorBox
+from Models.prediction_load_layer import prediction_layer
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -466,6 +467,8 @@ class SSD_detector():
                                                   net['mbox_conf']],
                                                  axis=2, name='predictions')
 
+                net['predictions'] = prediction_layer()(net['predictions'])
+
                 model = Model(input_tensor, net['predictions'], name='MobileNetV1-SSD')
                 # print('Import anchor file: {} not used in the training'.format(self.anchor_file))
 
@@ -487,7 +490,7 @@ class SSD_detector():
                                               net['mbox_priorbox']],
                                              axis=2, name='predictions')
 
-            net['predictions'] = tf.cast(net['predictions'], dtype=tf.float32)
+            net['predictions'] = prediction_layer()(net['predictions'])
 
             model = Model(input_tensor, net['predictions'], name='MobileNetV1-SSD')
             # print('No anchor files')
